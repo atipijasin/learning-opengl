@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
@@ -14,7 +15,7 @@ void handleEscKey(GLFWwindow *window) {
     }
 }
 
-int main() {
+GLFWwindow *initialize() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -26,16 +27,14 @@ int main() {
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return -1;
+        return NULL;
     }
-
-    // Create context
     glfwMakeContextCurrent(window);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
+        return NULL;
     }
 
     glViewport(0, 0, 800, 600);
@@ -43,11 +42,19 @@ int main() {
     // Register callback for user resize
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    return window;
+}
+
+int main() {
+    GLFWwindow *window = initialize();
+    if (window == NULL)
+        return -1;
+
     // Render loop
     while (!glfwWindowShouldClose(window)) {
         handleEscKey(window);
 
-        glClearColor(1.0f, 0.0f, 0.0f, 0.5f);
+        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glfwSwapBuffers(window);
