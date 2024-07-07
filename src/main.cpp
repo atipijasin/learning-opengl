@@ -70,22 +70,6 @@ int main() {
     if (window == NULL)
         return -1;
 
-    // simple triangle vertices represented as Normalized Device Coordinates
-    // (NDC)
-    float x1 = -0.5f;
-    float y1 = -0.5f;
-    float z1 = 0.0f;
-
-    float x2 = 0.5f;
-    float y2 = -0.5f;
-    float z2 = 0.0f;
-
-    float x3 = 0.0f;
-    float y3 = 0.5f;
-    float z3 = 0.0f;
-
-    float vertices[] = {x1, y1, z1, x2, y2, z2, x3, y3, z3};
-
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -120,6 +104,9 @@ int main() {
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
+    // Shaders are no loaded and no longer necessary at this point
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
     int programCompilationSuccessful;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS,
@@ -130,19 +117,34 @@ int main() {
                   << infoLog << std::endl;
     }
 
-    unsigned int VAO; // Vertex Array Objects
+    // simple vertices represented as Normalized Device Coordinates
+    // (NDC)
+    float vertices[] = {
+        0.5f,  0.5f,  0.0f, // top right
+        0.5f,  -0.5f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        -0.5f, 0.5f,  0.0f  // top left
+    };
+    unsigned int vertexIndices[] = {0, 1, 3, 1, 2, 3};
+
+    // bind VAO
+    unsigned int VAO; // Vertex Array Object
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
-    unsigned int VBO; // Vertex Buffer Objects
+    // copy vertices array in a vertex buffer for OpenGL to use
+    unsigned int VBO; // Vertex Buffer Object
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // copy index array in an element buffer for OpenGL to use
+    unsigned int EBO; // Element Buffer Object
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(vertexIndices), vertexIndices,
+                 GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
                           (void *)0);
     glEnableVertexAttribArray(0);
-    glUseProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
 
     // Render loop
     while (!glfwWindowShouldClose(window)) {
@@ -151,8 +153,8 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glUseProgram(shaderProgram);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
