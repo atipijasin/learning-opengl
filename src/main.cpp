@@ -35,7 +35,7 @@ void handleEscKey(GLFWwindow *window) {
     }
 }
 
-GLFWwindow *initialize() {
+GLFWwindow *initializeWindow() {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -65,11 +65,8 @@ GLFWwindow *initialize() {
     return window;
 }
 
-int main() {
-    GLFWwindow *window = initialize();
-    if (window == NULL)
-        return -1;
-
+// returns a shader program
+unsigned int initializeShaders(GLFWwindow *window) {
     unsigned int vertexShader;
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -83,6 +80,7 @@ int main() {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
+        return -1;
     }
 
     unsigned int fragmentShader;
@@ -96,11 +94,11 @@ int main() {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
+        return -1;
     }
 
     unsigned int shaderProgram;
     shaderProgram = glCreateProgram();
-
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
@@ -115,9 +113,13 @@ int main() {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n"
                   << infoLog << std::endl;
+        return -1;
     }
+    return shaderProgram;
+}
 
-    // simple vertices represented as Normalized Device Coordinates
+void initializeRecatngleVertices() {
+    // simple rectangle vertices represented as Normalized Device Coordinates
     // (NDC)
     float vertices[] = {
         0.5f,  0.5f,  0.0f, // top right
@@ -125,6 +127,12 @@ int main() {
         -0.5f, -0.5f, 0.0f, // bottom left
         -0.5f, 0.5f,  0.0f  // top left
     };
+
+    // The coordinates are actually used to draw two triangles to make a
+    // initializeRecatngleVertices the first 3 indexes represent the first
+    // triangle vertices: top right, bottom right, top left the second 3 indices
+    // represent the second triangle vertices: bottom right, bottom left, top
+    // left
     unsigned int vertexIndices[] = {0, 1, 3, 1, 2, 3};
 
     // bind VAO
@@ -145,7 +153,18 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
                           (void *)0);
     glEnableVertexAttribArray(0);
+}
 
+int main() {
+    GLFWwindow *window = initializeWindow();
+    if (window == NULL)
+        return -1;
+
+    unsigned int shaderProgram = initializeShaders(window);
+    if (shaderProgram == -1)
+        return -1;
+
+    initializeRecatngleVertices();
     // Render loop
     while (!glfwWindowShouldClose(window)) {
         handleEscKey(window);
@@ -154,6 +173,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
+        // currently drawing a rectngle using two triangles, that's why 6
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glfwSwapBuffers(window);
         glfwPollEvents();
