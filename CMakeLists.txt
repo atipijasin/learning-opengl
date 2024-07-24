@@ -10,7 +10,6 @@ include_directories(SYSTEM external/glad/include)
 add_executable(
   learning-opengl
   src/initializeWindow.cpp
-  src/initializeShaders.cpp
   src/main.cpp
   external/glad/src/glad.c
 )
