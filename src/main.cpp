@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 
 #include "initializeShaders.h"
-#include "initializeVertices.h"
 #include "initializeWindow.h"
 
 // Callback to handle user resize
@@ -27,7 +26,39 @@ int main() {
     if (shaderProgram == -1)
         return -1;
 
-    initializeVertices();
+    float vertices1[] = {
+        -1.0f, -0.5f, 0.0f, -0.1f, -0.5f, 0.0f, -0.5f, 0.25f, 0.0f,
+    };
+
+    float vertices2[] = {
+        1.0f, -0.5f, 0.0f, 0.1f, -0.5f, 0.0f, 0.5f, 0.25f, 0.0f,
+    };
+
+    // bind VAO
+    unsigned int VAO1; // Vertex Array Object
+    glGenVertexArrays(1, &VAO1);
+    unsigned int VAO2;
+    glGenVertexArrays(1, &VAO2);
+
+    glBindVertexArray(VAO1);
+    // copy vertices array in a vertex buffer for OpenGL to use
+    unsigned int VBO1; // Vertex Buffer Object
+    glGenBuffers(1, &VBO1);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                          (void *)0);
+
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(VAO2);
+    unsigned int VBO2;
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0 * sizeof(float),
+                          (void *)0);
+    glEnableVertexAttribArray(0);
     // Render loop
     while (!glfwWindowShouldClose(window)) {
         handleEscKey(window);
@@ -36,8 +67,10 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
-        // currently drawing a rectngle using two triangles, that's why 6
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(VAO1);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(VAO2);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
