@@ -1,6 +1,0 @@
-#ifndef INITIALIZE_RECTANGLE_VERTICES_H
-#define INITIALIZE_RECTANGLE_VERTICES_H
-
-void initializeRectangleVertices();
-
-#endif // INITIALIZE_RECTANGLE_VERTICES_H

@@ -3,8 +3,8 @@
 
 #include <GLFW/glfw3.h>
 
-#include "initializeRectangleVertices.h"
 #include "initializeShaders.h"
+#include "initializeVertices.h"
 #include "initializeWindow.h"
 
 // Callback to handle user resize
@@ -27,7 +27,7 @@ int main() {
     if (shaderProgram == -1)
         return -1;
 
-    initializeRectangleVertices();
+    initializeVertices();
     // Render loop
     while (!glfwWindowShouldClose(window)) {
         handleEscKey(window);
@@ -37,7 +37,7 @@ int main() {
 
         glUseProgram(shaderProgram);
         // currently drawing a rectngle using two triangles, that's why 6
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
