@@ -87,3 +87,5 @@ Temporary Items
 
 **/build
 **/.cache
+
+.idea
